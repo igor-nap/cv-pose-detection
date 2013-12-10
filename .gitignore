@@ -1,0 +1,2 @@
+# Ignore top level CMakeLists to be compatible across all ROS distributions
+/CMakeLists.txt
