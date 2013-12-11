@@ -110,7 +110,7 @@ int main (int argc, char** argv)
   filename = filename.stem(); // Get rid of the extension
   boost::filesystem::path dir = filepath.parent_path();
 
-  std::string opencv_out_ext = "_filtered.jpg";
+  std::string opencv_out_ext = "_filtered.png";
   std::string pcl_out_ext = "_filtered.pcd";
   std::string output_folder = "/output_cv_proj/";
   std::string output_stem;
