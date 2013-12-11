@@ -87,55 +87,33 @@ void PC_to_Mat(PointCloudT::Ptr &cloud, cv::Mat &result){
   }
 }
 
-/*
-void filter_PCD(string input_file){
 
-}
-*/
-
-
-int main (int argc, char** argv)
-{
-  ros::init(argc, argv, "cv_proj");
-  //std::string input_file = "/home/igor/pcds/assembly_objs/ardrone_02_indoor.pcd";
-  //std::string input_file = "/home/igor/pcds/assembly_objs/ardrone_03_outdoor.pcd";
-  /*
-  std::string input_file = "/home/igor/pcds/cluttered/3_objs_ardrone_indoor.pcd";
-  std::string output_file = "/home/igor/pcds/cv_proj_out/out_cluttered_indoor_01.pcd";
-  std::string template_file = "/home/igor/pcds/templates/indoor_template.pcd";
-  std::string out_rgb = "/home/igor/pcds/cv_proj_out/out_result_05.jpg";
-  */
-  std::string input_file, out_pcd, template_file, out_rgb, out_transf_pcd;
-
-  ros::param::param<std::string>("/cv_proj/input_file", input_file, "/home/igor/pcds/cluttered/3_objs_ardrone_indoor.pcd");
-  //ros::param::param<std::string>("/cv_proj/out_pcd", out_pcd, "/home/igor/pcds/cv_proj_out/out_cluttered_indoor_01.pcd");
-  ros::param::param<std::string>("/cv_proj/template_file", template_file, "/home/igor/pcds/templates/indoor_template.pcd");
-  //ros::param::param<std::string>("/cv_proj/out_rgb", out_rgb, "/home/igor/pcds/cv_proj_out/out_result_05.jpg");
-  
-
-
+void filter_PCD(string input_file){//, PointCloudT::Ptr &cloud, PointCloudT::Ptr &cloud_f, PointCloudT::Ptr &cloud_filtered){
   boost::filesystem::path filepath(input_file);
   boost::filesystem::path filename = filepath.filename();
   filename = filename.stem(); // Get rid of the extension
   boost::filesystem::path dir = filepath.parent_path();
 
+  std::string out_pcd, out_rgb;
+
   std::string opencv_out_ext = "_filtered.png";
   std::string pcl_out_ext = "_filtered.pcd";
-  std::string output_folder = "/output_cv_proj/";
+  std::string output_folder = "/output_batch_filtered_pcds/";
   std::string output_stem;
   output_stem = dir.string() + output_folder + filename.string();
 
   out_rgb = output_stem + opencv_out_ext;
   out_pcd = output_stem + pcl_out_ext;
-  out_transf_pcd = output_stem + "_templ" + pcl_out_ext;
 
   std::cout << out_rgb << std::endl;
   std::cout << out_pcd << std::endl;
 
   // Read in the cloud data
   pcl::PCDReader reader;
-  PointCloudT::Ptr cloud (new PointCloudT), cloud_f (new PointCloudT);
+  PointCloudT::Ptr cloud (new PointCloudT), cloud_f (new PointCloudT), cloud_filtered (new PointCloudT);
   reader.read (input_file, *cloud);
+  
+  /*
   std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
 
   if (cloud->isOrganized()) {
@@ -143,23 +121,9 @@ int main (int argc, char** argv)
     std::cout << "-- PointCloud cloud width: " << cloud->width << std::endl;
     std::cout << "-- PointCloud cloud height: " << cloud->height << std::endl;
   }
-
-  /*
-  // Create the filtering object: downsample the dataset using a leaf size of 1cm
-  pcl::VoxelGrid<PointT> vg;
-  PointCloudT::Ptr cloud_filtered (new PointCloudT);
-  vg.setInputCloud (cloud);
-  //vg.setLeafSize (0.01f, 0.01f, 0.01f);
-  vg.setLeafSize (0.001f, 0.001f, 0.001f);
-  //
-  vg.filter (*cloud_filtered);
-  std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size ()  << " data points." << std::endl; //*
   */
-  /**/
-  PointCloudT::Ptr cloud_filtered (new PointCloudT);
+
   *cloud_filtered = *cloud;
-
-
 
   // Create the segmentation object for the planar model and set all the parameters
   pcl::SACSegmentation<PointT> seg;
@@ -208,9 +172,7 @@ int main (int argc, char** argv)
     extract.setNegative (true);
     extract.filter (*cloud_f);
     //extract.filterDirectly(cloud_f);
-    *cloud_filtered = *cloud_f;
-
-    
+    *cloud_filtered = *cloud_f;    
   }
 
   cv::Mat result; 
@@ -219,92 +181,32 @@ int main (int argc, char** argv)
 
   imwrite( out_rgb, result );
 
-  // For templates
-  /*
-  // Box filter
-  pcl::PassThrough<PointT> pass_x;
-  pass_x.setInputCloud (cloud_filtered);
-  pass_x.setFilterFieldName ("x");
-  pass_x.setFilterLimits (-0.2, 0.4);
-  //pass.setFilterLimitsNegative (true);
-  pass_x.filter (*cloud_filtered);
-
-  pcl::PassThrough<PointT> pass_y;
-  pass_y.setInputCloud (cloud_filtered);
-  pass_y.setFilterFieldName ("y");
-  pass_y.setFilterLimits (-0.2, 0.4);
-  //pass.setFilterLimitsNegative (true);
-  pass_y.filter (*cloud_filtered);
-  */
-
   // Save file
   pcl::io::savePCDFileASCII (out_pcd, *cloud_filtered);
   std::cerr << "Saved " << (*cloud_filtered).points.size () << " data points to PCD file." << std::endl;
 
-  // Read in template file
-  PointCloudT::Ptr cloud_template (new PointCloudT);
-  reader.read (template_file, *cloud_template);
+}
 
-  pcl::VoxelGrid<PointT> vg_in;
-  PointCloudT::Ptr cloud_filtered_vg (new PointCloudT);
-  vg_in.setInputCloud (cloud_filtered);
-  vg_in.setLeafSize (0.001f, 0.001f, 0.001f);  //vg.setLeafSize (0.01f, 0.01f, 0.01f);
-  vg_in.filter (*cloud_filtered_vg);
 
-  pcl::VoxelGrid<PointT> vg_temp;
-  PointCloudT::Ptr cloud_template_vg (new PointCloudT);
-  vg_temp.setInputCloud (cloud_template);
-  vg_temp.setLeafSize (0.001f, 0.001f, 0.001f);  //vg.setLeafSize (0.01f, 0.01f, 0.01f);
-  vg_temp.filter (*cloud_template_vg);
 
-  // ICP
-  
-  PointCloudT::Ptr cloud_in (new PointCloudT), cloud_out (new PointCloudT);
-  
-  *cloud_in = *cloud_template_vg;
-  *cloud_out = *cloud_filtered_vg;
+int main (int argc, char** argv)
+{
+  ros::init(argc, argv, "cv_proj");
 
-  pcl::IterativeClosestPoint<PointT, PointT> icp;
-  icp.setInputCloud(cloud_in);
-  icp.setInputTarget(cloud_out);
-  PointCloudT Final;
-  icp.align(Final);
-  std::cout << "has converged:" << icp.hasConverged() << " score: " <<
-  icp.getFitnessScore() << std::endl;
-  
-  Eigen::Matrix4f transform = icp.getFinalTransformation ();
-  std::cout << transform << std::endl;
+  std::string input_dir;
 
-  // Transform template to original frame
-  PointCloudT::Ptr cloud_out2 (new PointCloudT);
-  
-  pcl::transformPointCloud(*cloud_in,*cloud_out2,transform);
-  pcl::io::savePCDFileASCII (out_transf_pcd, *cloud_out2);
-  std::cerr << "Saved " << (*cloud_out2).points.size () << " data points to PCD file." << std::endl;
-  
+  ros::param::param<std::string>("/cv_filter_batch/input_dir", input_dir, "/home/igor/pcds/pcd_grabber_batch");
+
+  fs::path targetDir(input_dir); 
+
+  fs::directory_iterator it(targetDir), eod;
+
+  BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod)){ 
+    if(is_regular_file(p)){
+      filter_PCD(p.string());
+    } 
+  }
 
   return (0);
 }
 
-/*
-template <typename PointT> void
-extractRGBFromPointCloud (PointCloudPtr input_cloud, pcl::PointCloud<pcl::RGB>::Ptr& output_cloud)
-{
-  // Extract RGB information from a point cloud and output the corresponding RGB point cloud  
-  output_cloud->points.resize(input_cloud->height*input_cloud->width);
-  output_cloud->width = input_cloud->width;
-  output_cloud->height = input_cloud->height;
-
-  pcl::RGB rgb_point;
-  for (int j = 0; j < input_cloud->width; j++)
-  {
-    for (int i = 0; i < input_cloud->height; i++)
-    { 
-      rgb_point.r = (*input_cloud)(j,i).r;
-      rgb_point.g = (*input_cloud)(j,i).g;
-      rgb_point.b = (*input_cloud)(j,i).b;    
-      (*output_cloud)(j,i) = rgb_point; 
-    }
-  }
-}
-*/
