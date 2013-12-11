@@ -87,6 +87,43 @@ void PC_to_Mat(PointCloudT::Ptr &cloud, cv::Mat &result){
   }
 }
 
+void filter_PC_from_BB(PointCloudT::Ptr &cloud, cv::Mat &result, int x, int y, int width, int height){
+
+  const float bad_point = std::numeric_limits<float>::quiet_NaN();
+
+  if (cloud->isOrganized()) {
+    std::cout << "PointCloud is organized..." << std::endl;
+    result = cv::Mat(cloud->height, cloud->width, CV_8UC3);
+
+    if (!cloud->empty()) {
+
+      for (int h=0; h<result.rows; h++) {
+        for (int w=0; w<result.cols; w++) {
+            
+            // Check if in bounding window
+            if ( (h>y && h<(y+height)) && ((w > x) && w < (x+width)) ){
+            
+              // do nothing
+
+            } else {
+
+              // remove point
+              //PointT point = cloud->at(w, h);
+              //cloud->at(w, h);
+              cloud->at(w, h).x = bad_point;
+              cloud->at(w, h).y = bad_point;
+              cloud->at(w, h).z = bad_point;
+              
+              cloud->at(w, h).r = bad_point;
+              cloud->at(w, h).g = bad_point;
+              cloud->at(w, h).b = bad_point;
+            }
+        }
+      }
+    }
+  }
+}
+
 /*
 void filter_PCD(string input_file){
 
@@ -218,6 +255,15 @@ int main (int argc, char** argv)
   PC_to_Mat(cloud_filtered,result);
 
   imwrite( out_rgb, result );
+
+  int rgb_x, rgb_y, rgb_width, rgb_height;
+
+  rgb_x = 240;
+  rgb_y = 150;
+  rgb_width = 200;
+  rgb_height = 200;
+
+  filter_PC_from_BB ( cloud_filtered, result, rgb_x, rgb_y, rgb_width, rgb_height);
 
   // For templates
   /*

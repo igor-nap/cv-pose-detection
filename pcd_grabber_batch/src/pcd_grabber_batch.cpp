@@ -225,9 +225,9 @@ int main (int argc, char** argv){
       flag_quit = true;
     } else if (user_input != KEY_QUIT && user_input != -1 && user_input != 0){
       // if (new_cloud_available_flag)
-      if (count > 100) {
+      if (count >= 100) {
         leading_zeros = "";}
-      else if (count > 10) {
+      else if (count >= 10) {
         leading_zeros = "0";}
       else {
         leading_zeros = "00";

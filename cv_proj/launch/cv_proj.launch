@@ -9,10 +9,19 @@
 	<rosparam param="/cv_proj/input_file">"/home/igor/pcds/cluttered/3_objs_ardrone_indoor.pcd"</rosparam>
 	<rosparam param="/cv_proj/template_file">"/home/igor/pcds/templates/output_cv_proj/indoor_full_01.pcd"</rosparam>
 	-->
-
+	<!--
 	<rosparam param="/cv_proj/input_file">"/home/igor/pcds/assembly_objs/ardrone_03_outdoor.pcd"</rosparam>
 	<rosparam param="/cv_proj/template_file">"/home/igor/pcds/templates/output_cv_proj/naked_full_01.pcd"</rosparam>
-
+	-->
+	
+	<rosparam param="/cv_proj/input_file">"/home/igor/pcds/cluttered/3_objs_ardrone_outdoor.pcd"</rosparam>
+	<rosparam param="/cv_proj/template_file">"/home/igor/pcds/templates/output_cv_proj/outdoor_full_01.pcd"</rosparam>
+	
+	<!--
+	<rosparam param="/cv_proj/input_file">"/home/igor/pcds/templates/outdoor_full_02_closer.pcd"</rosparam>
+	<rosparam param="/cv_proj/template_file">"/home/igor/pcds/templates/output_cv_proj/outdoor_full_01.pcd"</rosparam>
+	<node pkg="cv_proj" type="cv_proj" name="cv_proj" output="screen"/>
+	-->
 	<node pkg="cv_proj" type="cv_proj" name="cv_proj" output="screen"/>
 	
 </launch>
