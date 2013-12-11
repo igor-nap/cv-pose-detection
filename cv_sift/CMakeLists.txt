@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( cvProject )
+find_package( OpenCV REQUIRED)
+add_executable( haarTrain haarTrain.cpp)
+target_link_libraries( haarTrain ${OpenCV_LIBS})
